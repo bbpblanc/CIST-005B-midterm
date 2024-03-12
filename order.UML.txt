@@ -1,0 +1,245 @@
+@startuml
+
+package "collection" <<cloud>> #DDDDDD {
+
+    interface BagInterface{
+        + {abstract} add()
+        + {abstract} __len__()
+        + {abstract} __str__()
+        + {abstract} __iter__()
+        + {abstract} __add__()
+        + {abstract} __eq__()
+        + {abstract} count()
+        + {abstract} clear()
+        + {abstract} add()
+        + {abstract} remove()
+        + isEmpty()
+    }
+
+    class Node {
+        + data
+        + next
+    }
+
+    class LinkedBag {
+        - _head
+        - _tail
+        - _len
+        + __len__()
+        + __str__()
+        + __iter__()
+        + __add__()
+        + __eq__()
+        + count()
+        + clear()
+        + add()
+        + remove()
+    }
+
+    BagInterface <|-- LinkedBag
+    LinkedBag "many" o-- Node
+}
+
+
+class Menu {
+    - _bag
+    + __len__()
+    + __str__()
+    + bag()
+    + load(file)
+    + dump(file)
+}
+
+package MenuDB <<database>> #DDDDDD {
+}
+
+Menu *-- LinkedBag
+Menu "many" o-- "1" menuitem.MenuItem
+MenuDB --> Menu : JSON import
+Menu --> MenuDB: JSON export
+
+
+package menuitem {
+
+    abstract class MenuItem {
+        + name
+        + price
+        + __str__()
+    }
+    class ItemDisplay {
+        - float_precision
+        - column_size
+        - item
+        + __str__()
+    }
+    class Burger {}
+    class Beverage {}
+    MenuItem <|-- ItemDisplay
+    ItemDisplay o-- MenuItem
+    MenuItem <|-- Burger
+    MenuItem <|-- Beverage
+}
+
+class MenuDecoratorForOrder{
+    - _menu
+    - _keyed_bag
+    + __len__()
+    + __getitem__()
+    + __str__()
+    + bag()
+    + dump()
+    + load()
+}
+note top
+    Decorator design pattern.
+    https://en.wikipedia.org/wiki/Decorator_pattern
+end note
+
+Menu <|-- MenuDecoratorForOrder
+MenuDecoratorForOrder o-- Menu
+MenuDecoratorForOrder *-- LinkedBag
+
+
+package person {
+    abstract class Person{
+        - _tax_rate
+        + compute()
+    }
+    class Student {}
+    class Staff{}
+
+    Person <|-- Student
+    Person <|-- Staff
+}
+
+package questions {
+    abstract class Question{
+        - _question
+        - _result
+        + result()
+        + {abstract} ask()
+    }
+    class IntegerQuestion {
+        - _range
+        + ask()
+    }
+    class EnumQuestion {
+        - _enum
+        + ask()
+    }
+    Question <|-- IntegerQuestion
+    Question <|-- EnumQuestion
+}
+
+
+
+
+package transaction {
+    class Transactions {
+        - _bag
+        - _id
+        # _inc()
+        + __iter__()
+        + __getitem__()
+        + __str__()
+        + reset_IDs()
+        + keys()
+        + add()
+        + update()
+        + delete()
+    }
+
+    class Transaction {
+        item
+        quantity
+        id
+    }
+    Transactions "*" o-- "1" Transaction
+    Transactions "1" *-- LinkedBag
+    Transaction "1" o-- menuitem.MenuItem
+}
+
+
+package printer {
+    class Printer {
+        # order
+        + issue()
+        + store()
+    }
+
+    class Receipt {}
+    class PrettyPrint {
+        + issue()
+    }
+
+    class _PrintOnGoingOrderBasic {
+        + issue()
+    }
+    class _PrintOnGoingOrderPandas {
+        + issue()
+    }
+
+    class PrintOnGoingOrder {}
+
+    Printer <|-- Receipt
+    Printer <|-- _PrintOnGoingOrderBasic
+    Printer <|-- _PrintOnGoingOrderPandas
+    Receipt <|-- PrettyPrint
+
+    _PrintOnGoingOrderBasic <|-- PrintOnGoingOrder : current skin
+    _PrintOnGoingOrderPandas <|.. PrintOnGoingOrder : other skin
+
+
+    note right
+        the superclass allows to change
+        the skin to print the Order
+        differently
+    end note
+}
+
+
+package "main class" <<rectangle>> #DDDDDD {
+    class Order {
+        - {static} commands
+
+        - _transactions
+        - _menu
+        - _total
+        - _len
+        - _id
+        # print_commands()
+        + __str__()
+
+        + transactions()
+        + pre_tax()
+        + tax_rate()
+        + post_tax()
+        + taxes()
+        + id()
+
+        + fill()
+        + add()
+        + update()
+        + delete()
+        + commit()
+        + compute()
+        + shutdown()
+        + display_order()
+    }
+    note top
+        main:
+            Order().fill()
+    end note
+
+    Order "1" o-- "1" Transactions
+    Order "1" o-- "1" MenuDecoratorForOrder
+    Order *-- LinkedBag
+    Order "many" o-- Question
+    Order "1" *-- Receipt
+    Order "1" *-- PrintOnGoingOrder
+    Order "1" o-- Person
+} 
+
+
+
+@enduml
