@@ -1,6 +1,4 @@
-# Midterm project for CIST-005B - Advanced Python, West Valley CC
-
-System to handle burger ordering for the de Anza CC diner.
+# System to handle burger ordering for the de Anza CC diner
 
 Main file: order.py
 
